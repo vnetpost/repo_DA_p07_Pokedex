@@ -16,18 +16,35 @@
     <!-- <link rel="icon" type="image/png" sizes="32x32" href="./assets/img/favicon/favicon.svg"> -->
     <!-- <link rel="icon" type="image/png" sizes="16x16" href="./assets/img/favicon/favicon.svg"> -->
 
-    <link rel="stylesheet" href="./styles/standard.css">
-    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="./styles/base/standard.css">
+    <link rel="stylesheet" href="./styles/style.css">
+    <link rel="stylesheet" href="./styles/pages/index.css">
+    <link rel="stylesheet" href="./styles/components/dialog.css">
 
-    <script type="module" src="./main.js" defer></script>
+    <script type="module" src="./scripts/main.js" defer></script>
 
-    <title>Neues Thema</title>
+    <title>Pokédex</title>
 </head>
 
 <body>
     <div class="page-wrapper">
-        <header></header>
-        <main></main>
+        <header><img src="./assets/images/logo/logo.svg" alt="Logo Pic"></header>
+        <main>
+            <section class="cSecGallery">
+                <!-- <h1>Pokédex</h1> -->
+                <div id="idPokedexContainer" class="cGridPokedexContainer"></div>
+                <!--  -->
+                <button id="idBtnLoadNext" type="button">
+                    <img src="./assets/images/icons/load.svg" alt="Load-Next Icon">
+                </button>
+            </section>
+
+            <section id="idDlgContainer">
+
+            </section>
+            
+
+        </main>
         <footer></footer>
     </div>
 </body>

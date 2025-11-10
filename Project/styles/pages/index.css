@@ -1,0 +1,85 @@
+header {
+    /* border: 1px solid red; */
+}
+
+header img {
+    display: block;
+    width: 60%;
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 1.5rem 2rem;
+}
+
+.cSecGallery {
+    width: 100%;
+    padding: 3.5rem;
+}
+
+.cGridPokedexContainer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.05rem;
+}
+
+.cGridPokedexContainer .cCards {
+    display: flex;
+    flex-direction: column;
+    border-radius: 3rem;
+    padding: 2rem;
+    box-shadow: 0rem 0rem 1rem 0rem #a8a7a7;
+}
+
+.cGridPokedexContainer .cCards:hover {
+    scale: 1.01;
+    box-shadow: 0rem 0rem 1rem 0rem #8f8e8e;
+    cursor: pointer;
+}
+
+.cGridPokedexContainer .cCards h3 {
+    align-self: flex-end;
+    color: #0000001e;
+}
+
+.cGridPokedexContainer .cCards h2 {}
+
+.cGridPokedexContainer .cCards .cCardThumbs {
+    /* border: 1px solid red; */
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    min-width: 28rem;
+    width: ;
+}
+
+.cGridPokedexContainer .cCards .cCardThumbs .cCardTypes {
+    position: absolute;
+    /* z-index: 1; */
+    left: 0
+}
+
+.cGridPokedexContainer .cCards .cCardThumbs img {
+    /* border: 1px solid red; */
+    width: 25rem;
+}
+
+#idBtnLoadNext {
+    position: absolute;
+    /* z-index: 1; */
+    bottom: 0;
+    right: 0;
+    transform: translate(-50%, -50%);
+    border-radius: 2rem;
+    border: 0;
+}
+
+#idBtnLoadNext:hover {
+    scale: 1.1;
+    cursor: pointer;
+    box-shadow: 0rem 0rem 1rem 0rem grey;
+}
+
+#idBtnLoadNext img {
+    width: 5rem;
+    padding: 0.5rem;
+
+}
