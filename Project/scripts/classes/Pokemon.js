@@ -1,10 +1,17 @@
 // pokemon.js
 export class Pokemon {
-    id;                                         // Number           "id"
-    name;                                       // String           "name"
-    types = [];                                 // Array            "types[].type.name"
-    picUrl;                                     // String           "other.official-artwork.front_default"
-    bgColorName;                                // String           species.color.name ("green", ...)
+    id;                                         // Number           endpoint: 'pokemon' -> {id}
+    name;                                       // String           endpoint: 'pokemon' -> {name}
+    types = [];                                 // Array            endpoint: 'pokemon' -> {types[].type.name}
+    species;                                    // String           endpoint: 'pokemon' -> {species.name}
+    height;                                     // Number           endpoint: 'pokemon' -> {height}
+    weight;                                     // Number           endpoint: 'pokemon' -> {weight}
+    abilities = []                              // Array            endpoint: 'pokemon' -> {abilities[].ability.name}
+    picUrl;                                     // String           endpoint: 'pokemon' -> {sprites.other["official-artwork"].front_default
+    //                                                                                      || _pokemonDic.sprites.front_default}
+
+
+    bgColorName;                                // String           endpoint: 'pokemon-species' -> {color.name}
     bgColorHex;                                 // String           "#B2DFDB"
 
     static POKEMONS = [];                       // Array            [Pokmon, Pokmon, ...]
@@ -22,20 +29,26 @@ export class Pokemon {
         white: '#FAFAFA'
     };
 
-    constructor({ _id, _name, _types, _picUrl, _bgColorName } = {}) {
-        this.id = _id;
-        this.name = _name;
-        this.types = _types;
-        this.picUrl = _picUrl;
-        this.bgColorName = _bgColorName;
+    static CURRENTDLG;                          // Number           Instance's ID of current Instance-Dialog
 
+    // constructor({ _id, _name, _types, _species, _height, _weight, _abilities, _picUrl, _bgColorName } = {}) {}
+    constructor({ _pokemonDic, _pokemonBgColor } = {}) {
+        this.id = _pokemonDic.id;
+        this.name = _pokemonDic.name;
+        this.types = _pokemonDic.types.map(t => t.type.name);
+        this.species = _pokemonDic.species.name;
+        this.height = _pokemonDic.height;
+        this.weight = _pokemonDic.weight;
+        this.abilities = _pokemonDic.abilities.map(a => a.ability.name);
+        this.picUrl = _pokemonDic.sprites.other["official-artwork"].front_default
+            || _pokemonDic.sprites.front_default;
+
+        this.bgColorName = _pokemonBgColor;
         this.bgColorHex = Pokemon.COLORMAP[this.bgColorName] || '#FFFFFF';
 
         Pokemon.POKEMONS.push(this);
-
-        this.renderThumb();
+        this.renderCard();
     }
-
 
     static async getData({ url, endpoint, pId, limit = 20 } = {}) {
         let targetUrl;
@@ -55,63 +68,67 @@ export class Pokemon {
     }
 
     static async fromId(pId) {
-        // 1) Get Pokemon Dic
-        const pokeDic = await this.getData({ endpoint: 'pokemon', pId });
-        // 2) Get Species just to find his BG-Farbe
-        const pokeBgColor = (await this.getData({ endpoint: 'pokemon-species', pId })).color.name || 'white';
+        // 1) Get Pokemon-Dic
+        const pokemonDic = await this.getData({ endpoint: 'pokemon', pId });
+        // 2) Get pokemon-species just to find Pokemon-BG-Farbe
+        const pokemonBgColor = (await this.getData({ endpoint: 'pokemon-species', pId })).color.name;
 
-        const pokeInst = new Pokemon({
-            _id: pokeDic.id,
-            _name: pokeDic.name,
-            _types: pokeDic.types.map(t => t.type.name),
-            _picUrl: pokeDic.sprites.other["official-artwork"].front_default || pokeDic.sprites.front_default,
-            _bgColorName: pokeBgColor,
-        });
+        new Pokemon({ _pokemonDic: pokemonDic, _pokemonBgColor: pokemonBgColor });
     }
 
-    static initPokedex(limit = 30) {
-        let id = this.LASTLOADED + 1;
-        for (id; id <= (limit + this.LASTLOADED); id++) {
-            Pokemon.fromId(id);
-        }
+    static async initPokedex(limit = 30) {
+        const start = this.LASTLOADED + 1;
+        const end = this.LASTLOADED + limit;
+        for (let id = start; id <= end; id++) await Pokemon.fromId(id);
         this.LASTLOADED += limit;
-
-        Pokemon.POKEMONS.forEach(poke => {
-            document.getElementById(`idCard${poke.id}`).addEventListener("click", () => {
-
-            });
-        });
-
-        console.log(this.LASTLOADED);
+        this.EventsManagement();
     }
 
     static openDlg() {
         const ref_idDlg = document.getElementById("idDlg");
+        ref_idDlg.style.display = "flex";
         ref_idDlg.showModal();
     }
 
     static closeDlg() {
         const ref_idDlg = document.getElementById("idDlg");
+        ref_idDlg.style.display = "none";
         ref_idDlg.close();
+        ref_idDlg.remove();
     }
 
-    renderThumb() {
-        const ref_idPokedexContainer = document.getElementById('idPokedexContainer');
+    static EventsManagement() {
+
+        // Click on Card
+        Pokemon.POKEMONS.forEach(pokemon => {
+            document.getElementById(`idCard${pokemon.id}`).addEventListener("click", () => {
+                pokemon.renderDlg();
+                Pokemon.openDlg();
+            });
+        });
+    }
+
+    renderCard() {
         const Name = this.name[0].toUpperCase() + this.name.slice(1);
 
-        ref_idPokedexContainer.innerHTML += /*html*/`
-            <article id="idCard${this.id}" class="cCards" style="background:${this.bgColorHex}">
+        const art = document.createElement("article");
+        art.id = `idCard${this.id}`;
+        art.className = "cCards";
+        art.style.background = this.bgColorHex;
+        art.innerHTML += /*html*/`
                 <h3>#${this.id}</h3>
                 <h2>${Name}</h2>
-                <div id="idCardThumbs${this.id}" class="cCardThumbs">
+                <div class="cCardThumbs">
                     <div id="idCardTypesContainer${this.id}" class="cCardTypes">
-                        <!-- <p>poison</p> -->
+                        <!-- <p>...</p> -->
                     </div>
                     <img src="${this.picUrl}" alt="${this.name}" loading="lazy">
                 </div>
-            </article>
             `;
 
+        document.getElementById('idPokedexContainer').appendChild(art);
+
+        // Types in Card
         this.types.forEach(type => {
             const Type = type[0].toUpperCase() + type.slice(1);
             document.getElementById(`idCardTypesContainer${this.id}`).innerHTML += `<p>${Type}</p>`;
@@ -120,34 +137,138 @@ export class Pokemon {
 
 
     renderDlg() {
+        Pokemon.CURRENTDLG = this.id;
 
-        `
-        <dialog id="idDlg">
+        const ref_idDlgContainer = document.getElementById("idDlgContainer");
+        const Name = this.name[0].toUpperCase() + this.name.slice(1);
+
+
+        ref_idDlgContainer.innerHTML = /*html*/`       
+            <dialog id="idDlg" style="background:${this.bgColorHex}">
+                <button id="idDlgCloseBtn" class="cDlgCloseBtns">
+                    <img src="./assets/images/icons/close.svg" alt="Close BTN Icon">
+                </button>
                 <h3>#${this.id}</h3>
                 <h2>${Name}</h2>
-                <div id="idCardThumbs${this.id}" class="cCardThumbs">
-                    <div id="idCardTypesContainer${this.id}" class="cCardTypes">
-                        <p>${Type}</p>
-                        <p>${Type}</p>
+
+                <div class="cDlgThumbs">
+                    <div id="idDlgTypesContainer${this.id}" class="cDlgTypes">
+                        <!--  -->
                     </div>
                     <img src="${this.picUrl}" alt="${this.name}" loading="lazy">
                 </div>
-                <div class="cAbout">
-                    <p>Species<span>Charizard</span></p>
-                    <p>Height<span>170cm</span></p>
-                    <p>Weight<span>90.5kg</span></p>
-                    <p>Abilities<span>Blaze,Solar-Power</span></p>
+
+                <div class="cDlgAbout">
+                    <table>
+                        <tr>
+                            <th>Species</th>
+                            <td>${this.species}</td>
+                        </tr>
+                        <tr>
+                            <th>Height</th>
+                            <td>${this.height}cm</td>
+                        </tr>
+                        <tr>
+                            <th>Weight</th>
+                            <td>${this.weight}kg</td>
+                        </tr>
+                        <tr>
+                            <th>Abilities</th>
+                            <td>${this.abilities.join(', ')}</td>
+                        </tr>
+                    </table>
                 </div>
-                <div class="cMoveBtns">
+
+                <div class="cDlgMoveBtns">
                     <button id="idDlgBtnPrev" type="button">
                         <img src="./assets/images/icons/arrow-left.svg" alt="Arrow Left Icon">
                     </button>
+                    <span>${this.id}</span>
                     <button id="idDlgBtnNext" type="button">
                         <img src="./assets/images/icons/arrow-right.svg" alt="Arrow Right Icon">
                     </button>
                 </div>
 
             </dialog>
-        `
+        `;
+
+        // Types in Dialog
+        this.types.forEach(type => {
+            const Type = type[0].toUpperCase() + type.slice(1);
+            document.getElementById(`idDlgTypesContainer${this.id}`).innerHTML += `<p>${Type}</p>`;
+        });
+
+        // Close-BTN
+        document.getElementById("idDlgCloseBtn")
+            .addEventListener('click', () => Pokemon.closeDlg());
+
+        // Click on Backdrop
+        const ref_idDlg = document.getElementById("idDlg");
+        ref_idDlg.addEventListener("click", (e) => {
+            if (e.target == ref_idDlg) Pokemon.closeDlg();
+        });
+
+        // Click on Move-BTNs
+        const ref_idDlgBtnPrev = document.getElementById("idDlgBtnPrev");
+        const ref_idDlgBtnNext = document.getElementById("idDlgBtnNext");
+
+        ref_idDlgBtnPrev.addEventListener("click", () => {
+            const prevId = Pokemon.CURRENTDLG - 1;
+            if (prevId >= 1) Pokemon.updateDlg(prevId);
+            if (prevId < 1) {
+                prevId = Pokemon.POKEMONS.length;
+                Pokemon.updateDlg(prevId);
+            }
+        });
+
+
+        ref_idDlgBtnNext.addEventListener("click", () => {
+            const nextId = Pokemon.CURRENTDLG + 1;
+            if (nextId <= Pokemon.POKEMONS.length) Pokemon.updateDlg(nextId);
+            if (nextId > Pokemon.POKEMONS.length) {
+                nextId = 1;
+                Pokemon.updateDlg(nextId);
+            }
+        });
+
+    }
+
+    static updateDlg(pId) {
+        const pokemon = Pokemon.POKEMONS.find(p => p.id === pId);
+
+        const refDlg = document.getElementById("idDlg");
+
+        // Ueberschrift
+        refDlg.querySelector("h3").textContent = `#${pokemon.id}`;
+        refDlg.querySelector("h2").textContent = pokemon.name[0].toUpperCase() + pokemon.name.slice(1);
+
+        // Bild
+        refDlg.querySelector(".cDlgThumbs img").src = pokemon.picUrl;
+
+        // Farbe aendern
+        refDlg.style.background = pokemon.bgColorHex;
+
+        // Typen ersetzen
+        const typesContainer = refDlg.querySelector(".cDlgTypes");
+        typesContainer.innerHTML = "";
+        pokemon.types.forEach(t => {
+            const Type = t[0].toUpperCase() + t.slice(1);
+            typesContainer.innerHTML += `<p>${Type}</p>`;
+        });
+
+        // Tabelle ersetzen
+        const table = refDlg.querySelector("table");
+        table.innerHTML = `
+            <tr><th>Species</th><td>${pokemon.species}</td></tr>
+            <tr><th>Height</th><td>${pokemon.height * 10} cm</td></tr>
+            <tr><th>Weight</th><td>${(pokemon.weight / 10).toFixed(1)} kg</td></tr>
+            <tr><th>Abilities</th><td>${pokemon.abilities.join(', ')}</td></tr>
+        `;
+
+        const spanNumber = document.querySelector("span");
+        spanNumber.textContent = pokemon.id;
+
+        // Update Current-Dialog
+        Pokemon.CURRENTDLG = pokemon.id;
     }
 }
