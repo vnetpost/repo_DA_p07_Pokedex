@@ -79,8 +79,7 @@ export class Pokemon {
     static async initPokedex(limit = 30) {
         const start = this.LASTLOADED + 1;
         const end = this.LASTLOADED + limit;
-        // for (let id = start; id <= end; id++) await Pokemon.fromId(id);
-        for (let id = start; id <= end; id++) Pokemon.fromId(id);
+        for (let id = start; id <= end; id++) await Pokemon.fromId(id);
         this.LASTLOADED += limit;
         this.EventsManagement();
     }
