@@ -1,4 +1,4 @@
-dialog {
+#idDlg {
     border: 0;
     border-radius: 2rem;
     flex-direction: column;
@@ -8,19 +8,25 @@ dialog {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+    width: 30rem;
 
     &::backdrop {
         background: #808080bc;
     }
 }
 
-dialog .cDlgCloseBtns {
+#idDlg .cDlgHeader {
+    display: flex;
+    justify-content: space-between;
+}
+
+#idDlg .cDlgCloseBtns {
     align-self: flex-end;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 3rem;
-    height: 3rem;
+    width: 2.5rem;
+    height: 2.5rem;
     border: 0;
     border-radius: 1rem;
     box-shadow: 0rem 0rem 0.5rem black;
@@ -28,7 +34,7 @@ dialog .cDlgCloseBtns {
 
 
     img {
-        width: 2.5rem;
+        width: 2rem;
         height: auto;
         padding: 0.3rem;
     }
@@ -39,14 +45,14 @@ dialog .cDlgCloseBtns {
     }
 }
 
-dialog h3 {
+#idDlg h3 {
     align-self: flex-start;
     color: #0000005a;
 }
 
-dialog h2 {}
+#idDlg h2 {}
 
-dialog .cDlgThumbs {
+#idDlg .cDlgThumbs {
     display: flex;
     justify-content: center;
     align-items: flex-end;
@@ -59,23 +65,25 @@ dialog .cDlgThumbs {
     }
 
     img {
-        width: 25rem;
+        width: 17rem;
     }
 }
 
-dialog .cDlgAbout {
+#idDlg .cDlgAbout {
     display: flex;
     flex-direction: column;
     border-radius: 2rem;
     box-shadow: 0rem 0rem 1rem #dcdcdc;
     padding: 1rem;
+    overflow-y: auto;
+    max-height: 13rem;
 
     table tr th {
-        display: flex;
+        text-align: start;
     }
 }
 
-dialog .cDlgMoveBtns {
+#idDlg .cDlgMoveBtns {
     /* border: 1px solid red; */
     border-radius: 5rem;
     display: flex;
@@ -86,7 +94,8 @@ dialog .cDlgMoveBtns {
 
 
     span {
-        font-size: 1.2em;
+        font-size: 1em;
+        font-style: oblique;
     }
 
     button {
@@ -101,7 +110,7 @@ dialog .cDlgMoveBtns {
         }
 
         img {
-            width: 5rem;
+            width: 2rem;
         }
     }
 }

@@ -4,8 +4,10 @@ import { Pokemon } from "./classes/Pokemon.js";
 // console.log((await Pokemon.getData({ endpoint: "pokemon-species", pId: 1 })).color.name);
 
 // First Time Load
-Pokemon.initPokedex(30);
+Pokemon.initPokedex(50);
 
-document.getElementById("idBtnLoadNext").addEventListener("click", () => {
-    Pokemon.initPokedex(20);
+// Load more Pokemon
+document.getElementById("idBtnLoadMore").addEventListener("click", () => {
+    Pokemon.initPokedex(50);
 });
+

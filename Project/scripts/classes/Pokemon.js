@@ -1,5 +1,6 @@
 // pokemon.js
 export class Pokemon {
+    // #region Attributes
     id;                                         // Number           endpoint: 'pokemon' -> {id}
     name;                                       // String           endpoint: 'pokemon' -> {name}
     types = [];                                 // Array            endpoint: 'pokemon' -> {types[].type.name}
@@ -31,6 +32,8 @@ export class Pokemon {
 
     static CURRENTDLG;                          // Number           Instance's ID of current Instance-Dialog
 
+    // #endregion Attributes
+
     // constructor({ _id, _name, _types, _species, _height, _weight, _abilities, _picUrl, _bgColorName } = {}) {}
     constructor({ _pokemonDic, _pokemonBgColor } = {}) {
         this.id = _pokemonDic.id;
@@ -50,7 +53,8 @@ export class Pokemon {
         this.renderCard();
     }
 
-    static async getData({ url, endpoint, pId, limit = 20 } = {}) {
+    // #region Static-Methods
+    static async getData({ url, endpoint, pId, limit = 40 } = {}) {
         let targetUrl;
 
         if (url) {
@@ -76,22 +80,25 @@ export class Pokemon {
         new Pokemon({ _pokemonDic: pokemonDic, _pokemonBgColor: pokemonBgColor });
     }
 
-    static async initPokedex(limit = 30) {
+    static async initPokedex(limit = 40) {
+        this.showLoadingSpinner();
         const start = this.LASTLOADED + 1;
         const end = this.LASTLOADED + limit;
-        // for (let id = start; id <= end; id++) await Pokemon.fromId(id);
-        for (let id = start; id <= end; id++) Pokemon.fromId(id);
+        for (let id = start; id <= end; id++) await Pokemon.fromId(id);
         this.LASTLOADED += limit;
         this.EventsManagement();
+        this.removeLoadingSpinner();
     }
 
     static openDlg() {
+        document.body.style.overflow = "hidden";
         const ref_idDlg = document.getElementById("idDlg");
         ref_idDlg.style.display = "flex";
         ref_idDlg.showModal();
     }
 
     static closeDlg() {
+        document.body.style.overflow = "";
         const ref_idDlg = document.getElementById("idDlg");
         ref_idDlg.style.display = "none";
         ref_idDlg.close();
@@ -109,6 +116,68 @@ export class Pokemon {
         });
     }
 
+    static updateDlg(pId) {
+        const pokemon = Pokemon.POKEMONS.find(p => p.id === pId);
+
+        const refDlg = document.getElementById("idDlg");
+
+        // Ueberschrift
+        refDlg.querySelector("h3").textContent = `#${pokemon.id}`;
+        refDlg.querySelector("h2").textContent = pokemon.name[0].toUpperCase() + pokemon.name.slice(1);
+
+        // Bild
+        refDlg.querySelector(".cDlgThumbs img").src = pokemon.picUrl;
+
+        // Farbe aendern
+        refDlg.style.background = pokemon.bgColorHex;
+
+        // Typen ersetzen
+        const typesContainer = refDlg.querySelector(".cDlgTypes");
+        typesContainer.innerHTML = "";
+        pokemon.types.forEach(t => {
+            const Type = t[0].toUpperCase() + t.slice(1);
+            typesContainer.innerHTML += `<p>${Type}</p>`;
+        });
+
+        // Tabelle ersetzen
+        const table = refDlg.querySelector("table");
+        table.innerHTML = `
+            <tr><th>Species</th><td>${pokemon.species}</td></tr>
+            <tr><th>Height</th><td>${pokemon.height * 10} cm</td></tr>
+            <tr><th>Weight</th><td>${(pokemon.weight / 10).toFixed(1)} kg</td></tr>
+            <tr><th>Abilities</th><td>${pokemon.abilities.join(', ')}</td></tr>
+        `;
+
+        const ref_idDlgIndex = document.getElementById("idDlgIndex");
+        ref_idDlgIndex.textContent = pokemon.id;
+
+        // Update Current-Dialog
+        Pokemon.CURRENTDLG = pokemon.id;
+    }
+
+    static showLoadingSpinner() {
+        document.body.style.overflow = "hidden";
+        const ref_idDlgContainer = document.getElementById("idDlgContainer");
+
+        ref_idDlgContainer.innerHTML = /*html*/`
+                <dialog id="idDlgLoadingSpinner" style="">
+                    <img src="./assets/images/misc/ball.gif" alt="Ball GIF">
+                </dialog>        
+            `;
+
+        const ref_idDlgLoadingSpinner = document.getElementById("idDlgLoadingSpinner");
+        ref_idDlgLoadingSpinner.showModal();
+    }
+
+    static removeLoadingSpinner() {
+        document.body.style.overflow = "";
+        const ref_idDlgLoadingSpinner = document.getElementById("idDlgLoadingSpinner");
+        ref_idDlgLoadingSpinner.close();
+        ref_idDlgLoadingSpinner.remove();
+    }
+    // #endregion Static-Methods
+
+    // #region Methods
     renderCard() {
         const Name = this.name[0].toUpperCase() + this.name.slice(1);
 
@@ -120,10 +189,10 @@ export class Pokemon {
                 <h3>#${this.id}</h3>
                 <h2>${Name}</h2>
                 <div class="cCardThumbs">
+                    <img src="${this.picUrl}" alt="${this.name}" loading="lazy">
                     <div id="idCardTypesContainer${this.id}" class="cCardTypes">
                         <!-- <p>...</p> -->
                     </div>
-                    <img src="${this.picUrl}" alt="${this.name}" loading="lazy">
                 </div>
             `;
 
@@ -136,7 +205,6 @@ export class Pokemon {
         });
     }
 
-
     renderDlg() {
         Pokemon.CURRENTDLG = this.id;
 
@@ -146,10 +214,12 @@ export class Pokemon {
 
         ref_idDlgContainer.innerHTML = /*html*/`       
             <dialog id="idDlg" style="background:${this.bgColorHex}">
-                <button id="idDlgCloseBtn" class="cDlgCloseBtns">
-                    <img src="./assets/images/icons/close.svg" alt="Close BTN Icon">
-                </button>
-                <h3>#${this.id}</h3>
+                <div class="cDlgHeader">
+                    <h3>#${this.id}</h3>
+                    <button id="idDlgCloseBtn" class="cDlgCloseBtns">
+                        <img src="./assets/images/icons/close.svg" alt="Close BTN Icon">
+                    </button>
+                </div>
                 <h2>${Name}</h2>
 
                 <div class="cDlgThumbs">
@@ -163,19 +233,19 @@ export class Pokemon {
                     <table>
                         <tr>
                             <th>Species</th>
-                            <td>${this.species}</td>
+                            <td>: ${this.species}</td>
                         </tr>
                         <tr>
                             <th>Height</th>
-                            <td>${this.height}cm</td>
+                            <td>: ${this.height}cm</td>
                         </tr>
                         <tr>
                             <th>Weight</th>
-                            <td>${this.weight}kg</td>
+                            <td>: ${this.weight}kg</td>
                         </tr>
                         <tr>
                             <th>Abilities</th>
-                            <td>${this.abilities.join(', ')}</td>
+                            <td>: ${this.abilities.join(', ')}</td>
                         </tr>
                     </table>
                 </div>
@@ -227,43 +297,6 @@ export class Pokemon {
         });
 
     }
+    // #endregion Methods
 
-    static updateDlg(pId) {
-        const pokemon = Pokemon.POKEMONS.find(p => p.id === pId);
-
-        const refDlg = document.getElementById("idDlg");
-
-        // Ueberschrift
-        refDlg.querySelector("h3").textContent = `#${pokemon.id}`;
-        refDlg.querySelector("h2").textContent = pokemon.name[0].toUpperCase() + pokemon.name.slice(1);
-
-        // Bild
-        refDlg.querySelector(".cDlgThumbs img").src = pokemon.picUrl;
-
-        // Farbe aendern
-        refDlg.style.background = pokemon.bgColorHex;
-
-        // Typen ersetzen
-        const typesContainer = refDlg.querySelector(".cDlgTypes");
-        typesContainer.innerHTML = "";
-        pokemon.types.forEach(t => {
-            const Type = t[0].toUpperCase() + t.slice(1);
-            typesContainer.innerHTML += `<p>${Type}</p>`;
-        });
-
-        // Tabelle ersetzen
-        const table = refDlg.querySelector("table");
-        table.innerHTML = `
-            <tr><th>Species</th><td>${pokemon.species}</td></tr>
-            <tr><th>Height</th><td>${pokemon.height * 10} cm</td></tr>
-            <tr><th>Weight</th><td>${(pokemon.weight / 10).toFixed(1)} kg</td></tr>
-            <tr><th>Abilities</th><td>${pokemon.abilities.join(', ')}</td></tr>
-        `;
-
-        const ref_idDlgIndex = document.getElementById("idDlgIndex");
-        ref_idDlgIndex.textContent = pokemon.id;
-
-        // Update Current-Dialog
-        Pokemon.CURRENTDLG = pokemon.id;
-    }
 }
