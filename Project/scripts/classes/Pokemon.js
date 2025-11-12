@@ -1,3 +1,5 @@
+import { templateDialog } from "../../assets/data/templates/temp_dialog.js";
+
 // pokemon.js
 export class Pokemon {
     // #region Attributes
@@ -209,66 +211,18 @@ export class Pokemon {
         Pokemon.CURRENTDLG = this.id;
 
         const ref_idDlgContainer = document.getElementById("idDlgContainer");
-        const Name = this.name[0].toUpperCase() + this.name.slice(1);
 
+        const bound_templateDialog = templateDialog.bind(this);
 
-        ref_idDlgContainer.innerHTML = /*html*/`       
-            <dialog id="idDlg" style="background:${this.bgColorHex}">
-                <div class="cDlgHeader">
-                    <h3>#${this.id}</h3>
-                    <button id="idDlgCloseBtn" class="cDlgCloseBtns">
-                        <img src="./assets/images/icons/close.svg" alt="Close BTN Icon">
-                    </button>
-                </div>
-                <h2>${Name}</h2>
+        ref_idDlgContainer.innerHTML = bound_templateDialog();
 
-                <div class="cDlgThumbs">
-                    <div id="idDlgTypesContainer${this.id}" class="cDlgTypes">
-                        <!--  -->
-                    </div>
-                    <img src="${this.picUrl}" alt="${this.name}" loading="lazy">
-                </div>
-
-                <div class="cDlgAbout">
-                    <table>
-                        <tr>
-                            <th>Species</th>
-                            <td>: ${this.species}</td>
-                        </tr>
-                        <tr>
-                            <th>Height</th>
-                            <td>: ${this.height}cm</td>
-                        </tr>
-                        <tr>
-                            <th>Weight</th>
-                            <td>: ${this.weight}kg</td>
-                        </tr>
-                        <tr>
-                            <th>Abilities</th>
-                            <td>: ${this.abilities.join(', ')}</td>
-                        </tr>
-                    </table>
-                </div>
-
-                <div class="cDlgMoveBtns">
-                    <button id="idDlgBtnPrev" type="button">
-                        <img src="./assets/images/icons/arrow-left.svg" alt="Arrow Left Icon">
-                    </button>
-                    <span id="idDlgIndex">${this.id}</span>
-                    <button id="idDlgBtnNext" type="button">
-                        <img src="./assets/images/icons/arrow-right.svg" alt="Arrow Right Icon">
-                    </button>
-                </div>
-
-            </dialog>
-        `;
-
-        // Types in Dialog
+        // Put Types in Dialog
         this.types.forEach(type => {
             const Type = type[0].toUpperCase() + type.slice(1);
             document.getElementById(`idDlgTypesContainer${this.id}`).innerHTML += `<p>${Type}</p>`;
         });
 
+        // ########## Events:
         // Close-BTN
         document.getElementById("idDlgCloseBtn")
             .addEventListener('click', () => Pokemon.closeDlg());
@@ -295,7 +249,6 @@ export class Pokemon {
             if (nextId > Pokemon.POKEMONS.length) nextId = 1;
             Pokemon.updateDlg(nextId);
         });
-
     }
     // #endregion Methods
 
