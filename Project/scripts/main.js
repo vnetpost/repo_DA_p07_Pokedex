@@ -1,13 +1,20 @@
 import { Pokemon } from "./classes/Pokemon.js";
 
-// console.log(await Pokemon.getData({ endpoint: "pokemon", pId: 1 }));
-// console.log((await Pokemon.getData({ endpoint: "pokemon-species", pId: 1 })).color.name);
-
 // First Time Load
-Pokemon.initPokedex(50);
+Pokemon.initPokedex(40);
 
 // Load more Pokemon
 document.getElementById("idBtnLoadMore").addEventListener("click", () => {
-    Pokemon.initPokedex(50);
+    Pokemon.initPokedex(20);
 });
 
+document.getElementById("idSearchGo").addEventListener("click", () => {
+    const query = document.getElementById("idSearchInput").value;
+    if (query.length < 3) return;
+
+    Pokemon.applySearch(query);
+});
+
+document.getElementById("idSearchClear").addEventListener("click", () => {
+    document.getElementById("idSearchInput").value = "";
+});

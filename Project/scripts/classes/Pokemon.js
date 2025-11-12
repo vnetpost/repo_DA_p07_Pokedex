@@ -1,6 +1,5 @@
 import { templateDialog } from "../../assets/data/templates/temp_dialog.js";
 
-// pokemon.js
 export class Pokemon {
     // #region Attributes
     id;                                         // Number           endpoint: 'pokemon' -> {id}
@@ -36,7 +35,6 @@ export class Pokemon {
 
     // #endregion Attributes
 
-    // constructor({ _id, _name, _types, _species, _height, _weight, _abilities, _picUrl, _bgColorName } = {}) {}
     constructor({ _pokemonDic, _pokemonBgColor } = {}) {
         this.id = _pokemonDic.id;
         this.name = _pokemonDic.name;
@@ -58,11 +56,11 @@ export class Pokemon {
     // #region Static-Methods
     static async getData({ url, endpoint, pId, limit = 40 } = {}) {
         let targetUrl;
+        const base = 'https://pokeapi.co/api/v2';
 
         if (url) {
             targetUrl = url;
         } else {
-            const base = 'https://pokeapi.co/api/v2';
             if (!endpoint) targetUrl = `${base}/`;
             if (endpoint && !pId) targetUrl = `${base}/${endpoint}/?limit=${limit}`;
             if (endpoint && pId != null) targetUrl = `${base}/${endpoint}/${pId}/`;
@@ -109,7 +107,7 @@ export class Pokemon {
 
     static EventsManagement() {
 
-        // Click on Card
+        // Click on Card (Add to all)
         Pokemon.POKEMONS.forEach(pokemon => {
             document.getElementById(`idCard${pokemon.id}`).addEventListener("click", () => {
                 pokemon.renderDlg();
@@ -144,10 +142,10 @@ export class Pokemon {
         // Tabelle ersetzen
         const table = refDlg.querySelector("table");
         table.innerHTML = `
-            <tr><th>Species</th><td>${pokemon.species}</td></tr>
-            <tr><th>Height</th><td>${pokemon.height * 10} cm</td></tr>
-            <tr><th>Weight</th><td>${(pokemon.weight / 10).toFixed(1)} kg</td></tr>
-            <tr><th>Abilities</th><td>${pokemon.abilities.join(', ')}</td></tr>
+            <tr><th>Species</th><td>: ${pokemon.species}</td></tr>
+            <tr><th>Height</th><td>: ${pokemon.height * 10} cm</td></tr>
+            <tr><th>Weight</th><td>: ${(pokemon.weight / 10).toFixed(1)} kg</td></tr>
+            <tr><th>Abilities</th><td>: ${pokemon.abilities.join(', ')}</td></tr>
         `;
 
         const ref_idDlgIndex = document.getElementById("idDlgIndex");
@@ -177,6 +175,20 @@ export class Pokemon {
         ref_idDlgLoadingSpinner.close();
         ref_idDlgLoadingSpinner.remove();
     }
+
+    static applySearch(query) {
+        const q = query.trim().toLowerCase();
+        Pokemon.POKEMONS.forEach(poke => {
+            if (poke.name.toLowerCase().includes(q) || poke.id.toString().includes(q)) {
+                const card = document.getElementById(`idCard${poke.id}`);
+                if (card) {
+                    poke.renderDlg();
+                    Pokemon.openDlg();
+                }
+            }
+        });
+    }
+
     // #endregion Static-Methods
 
     // #region Methods
@@ -209,11 +221,8 @@ export class Pokemon {
 
     renderDlg() {
         Pokemon.CURRENTDLG = this.id;
-
         const ref_idDlgContainer = document.getElementById("idDlgContainer");
-
         const bound_templateDialog = templateDialog.bind(this);
-
         ref_idDlgContainer.innerHTML = bound_templateDialog();
 
         // Put Types in Dialog
@@ -231,6 +240,11 @@ export class Pokemon {
         const ref_idDlg = document.getElementById("idDlg");
         ref_idDlg.addEventListener("click", (e) => {
             if (e.target == ref_idDlg) Pokemon.closeDlg();
+        });
+
+        // ESC 
+        ref_idDlg.addEventListener("keydown", (e) => {
+            if (e.key == "Escape") Pokemon.closeDlg();
         });
 
         // Click on Move-BTNs
