@@ -143,13 +143,14 @@ export class Pokemon {
     static updateDlg(pId) {
         const pokemon = Pokemon.POKEMONS.find(p => p.id === pId);
         const refDlg = document.getElementById("idDlg");
+
         // Ueberschrift
         refDlg.querySelector("h3").textContent = `#${pokemon.id}`;
         refDlg.querySelector("h2").textContent = pokemon.name[0].toUpperCase() + pokemon.name.slice(1);
         // Bild
         refDlg.querySelector(".cDlgThumbs img").src = pokemon.picUrl;
-        // Farbe aendern
-        refDlg.style.background = pokemon.bgColorHex;
+        // BG-Farbe aendern
+        refDlg.style.background = Pokemon.TYPECOLOR[pokemon.types[0]];
         // Typen ersetzen
         const typesContainer = refDlg.querySelector(".cDlgTypes");
         typesContainer.innerHTML = "";
@@ -221,7 +222,7 @@ export class Pokemon {
         Pokemon.CURRENTDLGID = this.id;
         const bound_templateDialog = templateDialog.bind(this);
         document.getElementById("idDlgContainer").innerHTML = bound_templateDialog();
-        // document.getElementById("idDlg").style.background = Pokemon.TYPECOLOR[this.types[0]];
+        document.getElementById("idDlg").style.background = Pokemon.TYPECOLOR[this.types[0]];
         // Put Types in Dialog
         this.types.forEach(type => {
             const Type = type[0].toUpperCase() + type.slice(1);
