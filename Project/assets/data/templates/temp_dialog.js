@@ -53,3 +53,12 @@ export function templateDialog() {
             </dialog>
             `;
 }
+
+export function tempDlgTableUpdate(pokemon) {
+    return /*html*/`
+            <tr><th>Species</th><td>: ${pokemon.species}</td></tr>
+            <tr><th>Height</th><td>: ${pokemon.height * 10} cm</td></tr>
+            <tr><th>Weight</th><td>: ${(pokemon.weight / 10).toFixed(1)} kg</td></tr>
+            <tr><th>Abilities</th><td>: ${pokemon.abilities.join(', ')}</td></tr>
+        `;
+}

@@ -1,4 +1,6 @@
-import { templateDialog } from "../../assets/data/templates/temp_dialog.js";
+import { templateCard } from "../../assets/data/templates/temp_card.js";
+import { tempDlgTableUpdate, templateDialog } from "../../assets/data/templates/temp_dialog.js";
+import { templateDlgSpinner } from "../../assets/data/templates/temp_dlgSpinner.js";
 
 export class Pokemon {
     // #region Attributes
@@ -17,6 +19,8 @@ export class Pokemon {
     bgColorHex;                                 // String           "#B2DFDB"
 
     static POKEMONS = [];                       // Array            [Pokmon, Pokmon, ...]
+    static SEARCHBUCKET = [];                   // Array            [Pokmon, Pokmon, ...]
+    static SEARCHMODUS;                         // Booolean
     static LASTLOADED = 0;                      // Number           0, 30, 60, ...
     static COLORMAP = {
         green: '#B2DFDB',
@@ -31,7 +35,28 @@ export class Pokemon {
         white: '#FAFAFA'
     };
 
-    static CURRENTDLG;                          // Number           Instance's ID of current Instance-Dialog
+    static TYPECOLOR = {
+        normal: "#A8A77A",
+        fire: "#EE8130",
+        water: "#6390F0",
+        electric: "#F7D02C",
+        grass: "#7AC74C",
+        ice: "#96D9D6",
+        fighting: "#C22E28",
+        poison: "#A33EA1",
+        ground: "#E2BF65",
+        flying: "#A98FF3",
+        psychic: "#F95587",
+        bug: "#A6B91A",
+        rock: "#B6A136",
+        ghost: "#735797",
+        dragon: "#6F35FC",
+        dark: "#705746",
+        steel: "#B7B7CE",
+        fairy: "#D685AD"
+    };
+
+    static CURRENTDLGID;                          // Number           Current Instance-Dialog's ID
 
     // #endregion Attributes
 
@@ -106,7 +131,6 @@ export class Pokemon {
     }
 
     static EventsManagement() {
-
         // Click on Card (Add to all)
         Pokemon.POKEMONS.forEach(pokemon => {
             document.getElementById(`idCard${pokemon.id}`).addEventListener("click", () => {
@@ -118,19 +142,14 @@ export class Pokemon {
 
     static updateDlg(pId) {
         const pokemon = Pokemon.POKEMONS.find(p => p.id === pId);
-
         const refDlg = document.getElementById("idDlg");
-
         // Ueberschrift
         refDlg.querySelector("h3").textContent = `#${pokemon.id}`;
         refDlg.querySelector("h2").textContent = pokemon.name[0].toUpperCase() + pokemon.name.slice(1);
-
         // Bild
         refDlg.querySelector(".cDlgThumbs img").src = pokemon.picUrl;
-
         // Farbe aendern
         refDlg.style.background = pokemon.bgColorHex;
-
         // Typen ersetzen
         const typesContainer = refDlg.querySelector(".cDlgTypes");
         typesContainer.innerHTML = "";
@@ -138,35 +157,18 @@ export class Pokemon {
             const Type = t[0].toUpperCase() + t.slice(1);
             typesContainer.innerHTML += `<p>${Type}</p>`;
         });
-
         // Tabelle ersetzen
-        const table = refDlg.querySelector("table");
-        table.innerHTML = `
-            <tr><th>Species</th><td>: ${pokemon.species}</td></tr>
-            <tr><th>Height</th><td>: ${pokemon.height * 10} cm</td></tr>
-            <tr><th>Weight</th><td>: ${(pokemon.weight / 10).toFixed(1)} kg</td></tr>
-            <tr><th>Abilities</th><td>: ${pokemon.abilities.join(', ')}</td></tr>
-        `;
-
-        const ref_idDlgIndex = document.getElementById("idDlgIndex");
-        ref_idDlgIndex.textContent = pokemon.id;
-
+        refDlg.querySelector("table").innerHTML = tempDlgTableUpdate(pokemon);
+        // Id zwischen Arrows-Icons ersetzen
+        document.getElementById("idDlgIndex").textContent = pokemon.id;
         // Update Current-Dialog
-        Pokemon.CURRENTDLG = pokemon.id;
+        Pokemon.CURRENTDLGID = pokemon.id;
     }
 
     static showLoadingSpinner() {
         document.body.style.overflow = "hidden";
-        const ref_idDlgContainer = document.getElementById("idDlgContainer");
-
-        ref_idDlgContainer.innerHTML = /*html*/`
-                <dialog id="idDlgLoadingSpinner" style="">
-                    <img src="./assets/images/misc/ball.gif" alt="Ball GIF">
-                </dialog>        
-            `;
-
-        const ref_idDlgLoadingSpinner = document.getElementById("idDlgLoadingSpinner");
-        ref_idDlgLoadingSpinner.showModal();
+        document.getElementById("idDlgContainer").innerHTML = templateDlgSpinner();
+        document.getElementById("idDlgLoadingSpinner").showModal();
     }
 
     static removeLoadingSpinner() {
@@ -180,11 +182,11 @@ export class Pokemon {
         const q = query.trim().toLowerCase();
         Pokemon.POKEMONS.forEach(poke => {
             if (poke.name.toLowerCase().includes(q) || poke.id.toString().includes(q)) {
+                Pokemon.SEARCHBUCKET.push(poke);
+                Pokemon.SEARCHMODUS = true;
+            } else {
                 const card = document.getElementById(`idCard${poke.id}`);
-                if (card) {
-                    poke.renderDlg();
-                    Pokemon.openDlg();
-                }
+                if (card) card.style.display = "none";
             }
         });
     }
@@ -193,37 +195,32 @@ export class Pokemon {
 
     // #region Methods
     renderCard() {
-        const Name = this.name[0].toUpperCase() + this.name.slice(1);
-
         const art = document.createElement("article");
         art.id = `idCard${this.id}`;
         art.className = "cCards";
-        art.style.background = this.bgColorHex;
-        art.innerHTML += /*html*/`
-                <h3>#${this.id}</h3>
-                <h2>${Name}</h2>
-                <div class="cCardThumbs">
-                    <img src="${this.picUrl}" alt="${this.name}" loading="lazy">
-                    <div id="idCardTypesContainer${this.id}" class="cCardTypes">
-                        <!-- <p>...</p> -->
-                    </div>
-                </div>
-            `;
+        // art.style.background = this.bgColorHex;
+        art.style.background = Pokemon.TYPECOLOR[this.types[0]];
+        const bound_templateCard = templateCard.bind(this);
+        art.innerHTML += bound_templateCard();
 
         document.getElementById('idPokedexContainer').appendChild(art);
 
         // Types in Card
-        this.types.forEach(type => {
-            const Type = type[0].toUpperCase() + type.slice(1);
-            document.getElementById(`idCardTypesContainer${this.id}`).innerHTML += `<p>${Type}</p>`;
+        this.types.forEach((type, idx) => {
+            // const Type = type[0].toUpperCase() + type.slice(1);
+            const src = `./assets/images/icons/types/${type}.svg`;
+            document.getElementById(`idCardTypesContainer${this.id}`)
+                .innerHTML += /*html*/`
+                    <img id="idCard${this.id}TypeIcon${idx}" src="${src}" alt="Type Icon ${idx}" style="background: ${Pokemon.TYPECOLOR[type]}">
+                `;
         });
+
     }
 
     renderDlg() {
-        Pokemon.CURRENTDLG = this.id;
-        const ref_idDlgContainer = document.getElementById("idDlgContainer");
+        Pokemon.CURRENTDLGID = this.id;
         const bound_templateDialog = templateDialog.bind(this);
-        ref_idDlgContainer.innerHTML = bound_templateDialog();
+        document.getElementById("idDlgContainer").innerHTML = bound_templateDialog();
 
         // Put Types in Dialog
         this.types.forEach(type => {
@@ -232,6 +229,10 @@ export class Pokemon {
         });
 
         // ########## Events:
+        this.dlgEvents();
+    }
+
+    dlgEvents() {
         // Close-BTN
         document.getElementById("idDlgCloseBtn")
             .addEventListener('click', () => Pokemon.closeDlg());
@@ -252,16 +253,38 @@ export class Pokemon {
         const ref_idDlgBtnNext = document.getElementById("idDlgBtnNext");
 
         ref_idDlgBtnPrev.addEventListener("click", () => {
-            let prevId = Pokemon.CURRENTDLG - 1;
-            if (prevId < 1) prevId = Pokemon.POKEMONS.length;
-            Pokemon.updateDlg(prevId);
+            if (!Pokemon.SEARCHMODUS) {
+                let prevId = Pokemon.CURRENTDLGID - 1;
+                if (prevId < 1) prevId = Pokemon.POKEMONS.length;
+                Pokemon.updateDlg(prevId);
+            } else {    // Pokemon.SEARCHMODUS = true
+                if (Pokemon.SEARCHBUCKET.length === 1) return;
+                let idxInBucket;
+                Pokemon.SEARCHBUCKET.forEach((pokemon, index) => {
+                    if (pokemon.id === Pokemon.CURRENTDLGID) idxInBucket = index;
+                });
+                let prevIdx = idxInBucket - 1;
+                if (prevIdx < 0) prevIdx = Pokemon.SEARCHBUCKET.length - 1;
+                Pokemon.updateDlg(Pokemon.SEARCHBUCKET[prevIdx].id);
+            }
         });
 
 
         ref_idDlgBtnNext.addEventListener("click", () => {
-            let nextId = Pokemon.CURRENTDLG + 1;
-            if (nextId > Pokemon.POKEMONS.length) nextId = 1;
-            Pokemon.updateDlg(nextId);
+            if (!Pokemon.SEARCHMODUS) {
+                let nextId = Pokemon.CURRENTDLGID + 1;
+                if (nextId > Pokemon.POKEMONS.length) nextId = 1;
+                Pokemon.updateDlg(nextId);
+            } else {    // Pokemon.SEARCHMODUS = true
+                if (Pokemon.SEARCHBUCKET.length === 1) return;
+                let idxInBucket;
+                Pokemon.SEARCHBUCKET.forEach((pokemon, index) => {
+                    if (pokemon.id === Pokemon.CURRENTDLGID) idxInBucket = index;
+                });
+                let prevIdx = idxInBucket + 1;
+                if (prevIdx >= Pokemon.SEARCHBUCKET.length) prevIdx = 0;
+                Pokemon.updateDlg(Pokemon.SEARCHBUCKET[prevIdx].id);
+            }
         });
     }
     // #endregion Methods

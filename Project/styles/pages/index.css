@@ -81,12 +81,12 @@ header img {
     cursor: pointer;
 }
 
-.cPokedexContainer .cCards h3 {
+.cPokedexContainer .cCards h4 {
     align-self: flex-end;
-    color: #0000001e;
+    color: #0000003f;
 }
 
-.cPokedexContainer .cCards h2 {}
+.cPokedexContainer .cCards h3 {}
 
 .cPokedexContainer .cCards .cCardThumbs {
     display: flex;
@@ -104,13 +104,14 @@ header img {
 
     .cCardTypes {
         display: flex;
-        justify-content: space-between;
         gap: 1rem;
 
-        p {
-            padding: 0 0.5rem;
-            border-radius: 2rem;
+        img {
+            border: 0;
+            border-radius: 7rem;
             box-shadow: 0rem 0rem 1rem 0rem #ecebeb;
+            width: 4rem;
+            padding: 0.4rem 0.7rem;
         }
     }
 }
