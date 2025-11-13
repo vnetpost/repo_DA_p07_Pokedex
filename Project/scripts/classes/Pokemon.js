@@ -221,7 +221,7 @@ export class Pokemon {
         Pokemon.CURRENTDLGID = this.id;
         const bound_templateDialog = templateDialog.bind(this);
         document.getElementById("idDlgContainer").innerHTML = bound_templateDialog();
-
+        // document.getElementById("idDlg").style.background = Pokemon.TYPECOLOR[this.types[0]];
         // Put Types in Dialog
         this.types.forEach(type => {
             const Type = type[0].toUpperCase() + type.slice(1);

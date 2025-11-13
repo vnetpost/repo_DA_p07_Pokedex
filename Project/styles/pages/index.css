@@ -121,6 +121,7 @@ header img {
     position: fixed;
     bottom: 2rem;
     right: max(2rem, calc((100vw - 1440px)/2 + 2rem));
+    /* left: 50%; */
     border: 0;
     border-radius: 1.5rem;
     box-shadow: 0rem 0rem 1rem 0.1rem #8f8f8f;

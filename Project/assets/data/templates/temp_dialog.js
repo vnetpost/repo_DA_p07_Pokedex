@@ -1,9 +1,10 @@
+import { Pokemon } from "../../../scripts/classes/Pokemon.js";
 
 export function templateDialog() {
     const Name = this.name[0].toUpperCase() + this.name.slice(1);
 
     return /*html*/`       
-            <dialog id="idDlg" style="background:${this.bgColorHex}">
+            <dialog id="idDlg" style="background:${Pokemon.TYPECOLOR[this.types[0]]}">
                 <div class="cDlgHeader">
                     <h3>#${this.id}</h3>
                     <button id="idDlgCloseBtn" class="cDlgCloseBtns">
